@@ -7,7 +7,12 @@ import {
   TemplateComponents,
   Location,
 } from "./parameter-types";
-import { HeaderOtions, ShibaApiBase, Version } from "./shiba-api-base";
+import {
+  HeaderOtions,
+  ShibaApiBase,
+  TokenType,
+  Version,
+} from "./shiba-api-base";
 
 export class WhatsappMessages extends ShibaApiBase {
   private phoneNumberId: PhoneNumberId;
@@ -15,9 +20,10 @@ export class WhatsappMessages extends ShibaApiBase {
     access_token: string,
     version: Version,
     phoneNumberId: PhoneNumberId,
-    headerOptions?: HeaderOtions
+    headerOptions?: HeaderOtions,
+    tokenType?: TokenType
   ) {
-    super(access_token, version, headerOptions);
+    super(access_token, version, headerOptions, tokenType);
     this.phoneNumberId = phoneNumberId;
   }
 
