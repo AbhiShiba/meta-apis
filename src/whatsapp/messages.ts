@@ -1,3 +1,5 @@
+import { BadResponseError } from "../error/bad-response-error";
+import { formatError } from "../error/format-error";
 import {
   InteractionButtonComponent,
   InteractiveListComponent,
@@ -6,9 +8,13 @@ import {
   PhoneNumberId,
   TemplateComponents,
   Location,
+  WhatsappMessageResponse,
+  ResponseSuccess,
+  isResponseSuccess,
+  ResponseError,
 } from "./parameter-types";
 import {
-  HeaderOtions,
+  HeaderOptions,
   ShibaApiBase,
   TokenType,
   Version,
@@ -20,7 +26,7 @@ export class WhatsappMessages extends ShibaApiBase {
     access_token: string,
     version: Version,
     phoneNumberId: PhoneNumberId,
-    headerOptions?: HeaderOtions,
+    headerOptions?: HeaderOptions,
     tokenType?: TokenType
   ) {
     super(access_token, version, headerOptions, tokenType);
@@ -33,7 +39,7 @@ export class WhatsappMessages extends ShibaApiBase {
     templateName: string,
     language_code: LanguageCode,
     components?: TemplateComponents
-  ) {
+  ): Promise<WhatsappMessageResponse> {
     let _components = this.componentMake(components);
 
     const data = {
@@ -54,7 +60,11 @@ export class WhatsappMessages extends ShibaApiBase {
   }
 
   // whatsapp response text
-  async text(to: string, bodyText: string, preview_url: boolean = true) {
+  async text(
+    to: string,
+    bodyText: string,
+    preview_url: boolean = true
+  ): Promise<WhatsappMessageResponse> {
     const data = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
@@ -70,7 +80,10 @@ export class WhatsappMessages extends ShibaApiBase {
   }
 
   // whatsapp response image
-  async image(to: string, imageOption: Media) {
+  async image(
+    to: string,
+    imageOption: Media
+  ): Promise<WhatsappMessageResponse> {
     const data: {
       messaging_product: "whatsapp";
       recipient_type: "individual";
@@ -91,7 +104,10 @@ export class WhatsappMessages extends ShibaApiBase {
   }
 
   // whatsapp response video
-  async video(to: string, videoOption: Media) {
+  async video(
+    to: string,
+    videoOption: Media
+  ): Promise<WhatsappMessageResponse> {
     const data: {
       messaging_product: "whatsapp";
       recipient_type: "individual";
@@ -115,7 +131,7 @@ export class WhatsappMessages extends ShibaApiBase {
   async interactiveReplyButtons(
     to: string,
     component: InteractionButtonComponent
-  ) {
+  ): Promise<WhatsappMessageResponse> {
     const data = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
@@ -127,7 +143,10 @@ export class WhatsappMessages extends ShibaApiBase {
     return await this.send(data);
   }
 
-  async interactiveListReply(to: string, component: InteractiveListComponent) {
+  async interactiveListReply(
+    to: string,
+    component: InteractiveListComponent
+  ): Promise<WhatsappMessageResponse> {
     const data = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
@@ -140,7 +159,10 @@ export class WhatsappMessages extends ShibaApiBase {
   }
 
   /* whatsapp location response */
-  async location(to: string, location: Location) {
+  async location(
+    to: string,
+    location: Location
+  ): Promise<WhatsappMessageResponse> {
     const data = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
@@ -152,22 +174,37 @@ export class WhatsappMessages extends ShibaApiBase {
     return await this.send(data);
   }
 
-  async send(data: any): Promise<Response | any> {
+  async send(data: any): Promise<WhatsappMessageResponse> {
     try {
       const response = await this.api.post(
         `/${this.phoneNumberId}/messages`,
         data
       );
 
-      const result: Response = response.data;
+      const responseData = response.data;
+
+      const isValid = isResponseSuccess(responseData);
+
+      if (!isValid)
+        throw new BadResponseError("Invalid schema format", responseData);
+
+      const result: ResponseSuccess = {
+        status: "success",
+        messaging_product: response.data.messaging_product,
+        contacts: responseData.contacts,
+        messages: responseData.messages,
+      };
 
       return result;
     } catch (err: any) {
-      if (!err?.response?.data) {
-        return err;
-      }
+      const formattedError = formatError(err, err?.response?.data?.error);
 
-      return err.response.data;
+      const error: ResponseError = {
+        status: "error",
+        error: formattedError,
+      };
+
+      return error;
     }
   }
 
@@ -176,7 +213,7 @@ export class WhatsappMessages extends ShibaApiBase {
       return null;
     }
     const _components = [];
-    const { bodyParamenter, headerParameter } = components;
+    const { bodyParameter, headerParameter } = components;
 
     if (headerParameter) {
       const header = {
@@ -185,10 +222,10 @@ export class WhatsappMessages extends ShibaApiBase {
       };
       _components.push(header);
     }
-    if (bodyParamenter) {
+    if (bodyParameter) {
       const body = {
         type: "body",
-        parameters: bodyParamenter,
+        parameters: bodyParameter,
       };
       _components.push(body);
     }

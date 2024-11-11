@@ -46,24 +46,34 @@ export type Message_Header =
   | DocumentParameter;
 
 export type TemplateComponents = {
-  bodyParamenter?: TextParameter[];
+  bodyParameter?: TextParameter[];
   headerParameter?: Message_Header;
 };
 
-export type Response = {
+type MessageResponse = {
   messaging_product: string;
-  contacts: [
-    {
-      input: string;
-      wa_id: string;
-    }
-  ];
-  messages: [
-    {
-      id: string;
-    }
-  ];
+  contacts: {
+    input: string;
+    wa_id: string;
+  }[];
+  messages: {
+    id: string;
+  }[];
 };
+
+export type ResponseSuccess = {
+  status: "success";
+} & MessageResponse;
+
+export type ResponseError = {
+  status: "error";
+  error: {
+    message: string;
+    details?: Record<string,any>;
+  }[];
+};
+
+export type WhatsappMessageResponse = ResponseSuccess | ResponseError;
 
 export type Body = {
   text: string;
@@ -128,6 +138,29 @@ export type UploadMIMEType =
   | "image/png"
   | "video/mp4"
   | "application/pdf";
+
+export function isResponseSuccess(
+  data: MessageResponse
+): data is MessageResponse {
+  const result =
+    typeof data === "object" &&
+    "messaging_product" in data &&
+    typeof data.messaging_product === "string" &&
+    "messages" in data &&
+    Array.isArray(data.messages) &&
+    data.messages.every((obj) => "id" in obj && typeof obj.id === "string") &&
+    "contacts" in data &&
+    Array.isArray(data.contacts) &&
+    data.contacts.every(
+      (obj) =>
+        "input" in obj &&
+        typeof obj.input === "string" &&
+        "wa_id" in obj &&
+        typeof obj.wa_id === "string"
+    );
+
+  return result;
+}
 
 export function isMediaWithId(media: Media): media is MediaId {
   return "id" in media;
