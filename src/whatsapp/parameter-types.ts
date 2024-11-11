@@ -58,6 +58,7 @@ type MessageResponse = {
   }[];
   messages: {
     id: string;
+    message_status?: string
   }[];
 };
 

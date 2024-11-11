@@ -190,7 +190,7 @@ export class WhatsappMessages extends ShibaApiBase {
 
       const result: ResponseSuccess = {
         status: "success",
-        messaging_product: response.data.messaging_product,
+        messaging_product: responseData.messaging_product,
         contacts: responseData.contacts,
         messages: responseData.messages,
       };
