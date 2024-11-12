@@ -46,13 +46,11 @@ export type Message_Header =
   | DocumentParameter;
 
 export type QuickReply = {
-  type: "button";
-  sub_type: "quick_reply";
   index: "0" | "1" | "2";
   parameters: {
     type: "payload";
     payload: string;
-  };
+  }[];
 };
 
 type MessageResponse = {
