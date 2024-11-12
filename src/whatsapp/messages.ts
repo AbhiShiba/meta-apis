@@ -213,7 +213,7 @@ export class WhatsappMessages extends ShibaApiBase {
       return null;
     }
     const _components = [];
-    const { bodyParameter, headerParameter } = components;
+    const { bodyParameter, headerParameter, quickReply } = components;
 
     if (headerParameter) {
       const header = {
@@ -228,6 +228,18 @@ export class WhatsappMessages extends ShibaApiBase {
         parameters: bodyParameter,
       };
       _components.push(body);
+    }
+
+    if (quickReply && Array.isArray(quickReply)) {
+      quickReply.forEach((ele) => {
+        const value = {
+          type: "button",
+          sub_type: "quick_reply",
+          index: ele.index,
+          parameters: ele.parameters,
+        };
+        _components.push(value)
+      });
     }
 
     return _components;
