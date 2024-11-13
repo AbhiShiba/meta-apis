@@ -45,9 +45,12 @@ export type Message_Header =
   | VideoParameter
   | DocumentParameter;
 
-export type TemplateComponents = {
-  bodyParameter?: TextParameter[];
-  headerParameter?: Message_Header;
+export type QuickReply = {
+  index: "0" | "1" | "2";
+  parameters: {
+    type: "payload";
+    payload: string;
+  }[];
 };
 
 type MessageResponse = {
@@ -58,7 +61,7 @@ type MessageResponse = {
   }[];
   messages: {
     id: string;
-    message_status?: string
+    message_status?: string;
   }[];
 };
 
@@ -70,7 +73,7 @@ export type ResponseError = {
   status: "error";
   error: {
     message: string;
-    details?: Record<string,any>;
+    details?: Record<string, any>;
   }[];
 };
 
@@ -139,6 +142,12 @@ export type UploadMIMEType =
   | "image/png"
   | "video/mp4"
   | "application/pdf";
+
+export type TemplateComponents = {
+  bodyParameter?: TextParameter[];
+  headerParameter?: Message_Header;
+  quickReply?: Buttons<QuickReply>;
+};
 
 export function isResponseSuccess(
   data: MessageResponse
