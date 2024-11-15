@@ -11,9 +11,7 @@ A TypeScript library for interacting with the WhatsApp Business API. It provides
 - [Getting Started](#getting-started)
 - [API Reference](#api-reference)
   - [WhatsappMessages](#whatsappmessages) - [Message Types](#message-types)
-  <!--
-- [Error Handling](#error-handling)
-  --->
+  <!--- [Error Handling](#error-handling) --->
 - [License](#license)
 
 ---
@@ -84,13 +82,12 @@ Constructor
 
 1. Template Messages
 
-
-    async template(
-      to: string,
-      templateName: string,
-      language_code: LanguageCode,
-      components?: TemplateComponents
-    ): Promise<WhatsappMessageResponse>;
+   async template(
+   to: string,
+   templateName: string,
+   language_code: LanguageCode,
+   components?: TemplateComponents
+   ): Promise<WhatsappMessageResponse>;
 
 - Sends a WhatsApp template message.
 
