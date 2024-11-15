@@ -126,7 +126,7 @@ Constructor
 
 3.  Media Messages
 
-    - Image
+- Image
 
 ```
         async image(
@@ -135,7 +135,7 @@ Constructor
         ): Promise<WhatsappMessageResponse>;
 ```
 
-    - Video
+- Video
 
 ```
         async video(
