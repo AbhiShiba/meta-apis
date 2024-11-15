@@ -144,7 +144,7 @@ Constructor
         ): Promise<WhatsappMessageResponse>;
 ```
 
-    Example:
+Example:
 
 ```
         await whatsapp
