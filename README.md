@@ -43,21 +43,23 @@ Prerequisites
 
 ## Example Usage
 
-    import { WhatsappMessages } from "@shibacore/apis";
+```
+  import { WhatsappMessages } from "@shibacore/apis";
 
-    const accessToken = "your-access-token";
-    const phoneNumberId = "your-phone-number-id";
-    const apiVersion = "v20.0";
+  const accessToken = "your-access-token";
+  const phoneNumberId = "your-phone-number-id";
+  const apiVersion = "v20.0";
 
-    const whatsapp =
-            new WhatsappMessages(accessToken, apiVersion, phoneNumberId);
+  const whatsapp =
+          new WhatsappMessages(accessToken, apiVersion, phoneNumberId);
 
-    // Send a text message
-    (async () => {
-    const response =
-            await whatsapp.text("recipient-phone-number", "Hello, World!");
-    console.log(response);
-    })();
+  // Send a text message
+  (async () => {
+  const response =
+          await whatsapp.text("recipient-phone-number", "Hello, World!");
+  console.log(response);
+  })();
+```
 
 ---
 
@@ -68,13 +70,16 @@ Prerequisites
 Provides methods to send different types of WhatsApp messages.
 Constructor
 
-    constructor(
-      access_token: string,
-      version: Version,
-      phoneNumberId: PhoneNumberId,
-      headerOptions?: HeaderOptions,
-      tokenType?: TokenType
-    )
+```
+  constructor(
+    access_token: string,
+    version: Version,
+    phoneNumberId: PhoneNumberId,
+    headerOptions?: HeaderOptions,
+    tokenType?: TokenType
+  )
+
+```
 
 - phoneNumberId: The ID of the WhatsApp Business phone number.
 
@@ -82,55 +87,69 @@ Constructor
 
 1. Template Messages
 
-   async template(
-   to: string,
-   templateName: string,
-   language_code: LanguageCode,
-   components?: TemplateComponents
-   ): Promise<WhatsappMessageResponse>;
+```
+    async template(
+    to: string,
+    templateName: string,
+    language_code: LanguageCode,
+    components?: TemplateComponents
+    ): Promise<WhatsappMessageResponse>;
+```
 
 - Sends a WhatsApp template message.
 
   Example:
 
+  ```
       await whatsapp
            .template("recipient-phone-number", "hello_world", "en_US");
+  ```
 
 2. Text Messages
 
-   async text(
-   to: string,
-   bodyText: string,
-   preview_url?: boolean
-   ): Promise<WhatsappMessageResponse>;
+```
+    async text(
+    to: string,
+    bodyText: string,
+    preview_url?: boolean
+    ): Promise<WhatsappMessageResponse>;
+```
 
 - Sends a plain text message.
 
   Example:
 
+```
       await whatsapp
             .text("recipient-phone-number", "Hello, this is a message!");
+```
 
 3.  Media Messages
 
     - Image
 
-          async image(
-            to: string,
-            imageOption: Media
-          ): Promise<WhatsappMessageResponse>;
+```
+        async image(
+          to: string,
+          imageOption: Media
+        ): Promise<WhatsappMessageResponse>;
+```
 
     - Video
 
-          async video(
-            to: string,
-            videoOption: Media
-          ): Promise<WhatsappMessageResponse>;
+```
+        async video(
+          to: string,
+          videoOption: Media
+        ): Promise<WhatsappMessageResponse>;
+```
 
     Example:
 
+```
         await whatsapp
             .image("recipient-phone-number", { id: "media-id" });
+```
 
 <!--
   4. Interactive Messages
@@ -158,19 +177,23 @@ Constructor
 
 4. Location Messages
 
-   async location(
-   to: string,
-   location: Location
-   ): Promise<WhatsappMessageResponse>;
+```
+    async location(
+    to: string,
+    location: Location
+    ): Promise<WhatsappMessageResponse>;
+```
 
-   Example:
+Example:
 
-   await whatsapp.location("recipient-phone-number", {
-   latitude: "12.34",
-   longitude: "56.78",
-   name: "Location Name",
-   address: "123 Address St."
-   });
+```
+      await whatsapp.location("recipient-phone-number", {
+      latitude: "12.34",
+      longitude: "56.78",
+      name: "Location Name",
+      address: "123 Address St."
+      });
+```
 
 ---
 
