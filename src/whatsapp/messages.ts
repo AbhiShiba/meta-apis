@@ -12,6 +12,12 @@ import {
   ResponseSuccess,
   isResponseSuccess,
   ResponseError,
+  Body,
+  Section,
+  TextParameter,
+  Footer,
+  Message_Header,
+  InteractiveButton,
 } from "./parameter-types";
 import {
   HeaderOptions,
@@ -20,8 +26,24 @@ import {
   Version,
 } from "./shiba-api-base";
 
+/**
+ * A class for managing WhatsApp messages using the WhatsApp Business API.
+ */
 export class WhatsappMessages extends ShibaApiBase {
+  /**
+   * The phone number ID associated with the WhatsApp Business account.
+   */
   private phoneNumberId: PhoneNumberId;
+
+  /**
+   * Constructs an instance of `WhatsappMessages`.
+   *
+   * @param access_token - The access token used for authentication.
+   * @param version - The API version, formatted as `v<number>`.
+   * @param phoneNumberId - The phone number ID for sending messages.
+   * @param headerOptions - Optional custom headers for the API requests.
+   * @param tokenType - The type of token for authorization. Defaults to "Bearer".
+   */
   constructor(
     access_token: string,
     version: Version,
@@ -33,7 +55,15 @@ export class WhatsappMessages extends ShibaApiBase {
     this.phoneNumberId = phoneNumberId;
   }
 
-  // whatsapp template messages
+  /**
+   * Sends a WhatsApp template message.
+   *
+   * @param to - The recipient's phone number in international format.
+   * @param templateName - The name of the template to send.
+   * @param language_code - The language code of the template (e.g., "en_US").
+   * @param components - Optional components like header, body, or buttons.
+   * @returns A promise resolving to the WhatsApp API response.
+   */
   async template(
     to: string,
     templateName: string,
@@ -59,7 +89,14 @@ export class WhatsappMessages extends ShibaApiBase {
     return await this.send(data);
   }
 
-  // whatsapp response text
+  /**
+   * Sends a plain text message.
+   *
+   * @param to - The recipient's phone number in international format.
+   * @param bodyText - The text content of the message.
+   * @param preview_url - Whether to include a URL preview in the message. Defaults to true.
+   * @returns A promise resolving to the WhatsApp API response.
+   */
   async text(
     to: string,
     bodyText: string,
@@ -79,7 +116,13 @@ export class WhatsappMessages extends ShibaApiBase {
     return await this.send(data);
   }
 
-  // whatsapp response image
+  /**
+   * Sends an image message.
+   *
+   * @param to - The recipient's phone number in international format.
+   * @param imageOption - The media object containing image details (e.g., URL or ID).
+   * @returns A promise resolving to the WhatsApp API response.
+   */
   async image(
     to: string,
     imageOption: Media
@@ -103,7 +146,13 @@ export class WhatsappMessages extends ShibaApiBase {
     return await this.send(data);
   }
 
-  // whatsapp response video
+  /**
+   * Sends a video message.
+   *
+   * @param to - The recipient's phone number in international format.
+   * @param videoOption - The media object containing video details (e.g., URL or ID).
+   * @returns A promise resolving to the WhatsApp API response.
+   */
   async video(
     to: string,
     videoOption: Media
@@ -127,38 +176,107 @@ export class WhatsappMessages extends ShibaApiBase {
     return await this.send(data);
   }
 
-  // whatsapp interactive reply button response
+  /**
+   * Sends a message with interactive reply buttons.
+   *
+   * @param to - The recipient's phone number in international format.
+   * @param component - The interactive button component details.
+   * @returns A promise resolving to the WhatsApp API response.
+   */
   async interactiveReplyButtons(
     to: string,
     component: InteractionButtonComponent
   ): Promise<WhatsappMessageResponse> {
+    const _component: {
+      type: "button";
+      body: Body;
+      action: {
+        buttons: InteractiveButton;
+      };
+      header?: Message_Header;
+      footer?: Footer;
+    } = {
+      type: "button",
+      body: component.body,
+      action: {
+        buttons: component.buttons,
+      },
+    };
+
+    if (component.header) {
+      _component.header = component.header;
+    }
+
+    if (component.footer) {
+      _component.footer = component.footer;
+    }
+
     const data = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
       to: to,
       type: "interactive",
-      interactive: component,
+      interactive: _component,
     };
 
     return await this.send(data);
   }
 
+  /**
+   * Sends an interactive list reply message.
+   *
+   * @param to - The recipient's phone number in international format.
+   * @param component - The interactive list component details.
+   * @returns A promise resolving to the WhatsApp API response.
+   */
   async interactiveListReply(
     to: string,
     component: InteractiveListComponent
   ): Promise<WhatsappMessageResponse> {
+    const _component: {
+      type: "list";
+      body: Body;
+      action: {
+        button: string;
+        section: Section[];
+      };
+      header?: TextParameter;
+      footer?: Footer;
+    } = {
+      type: "list",
+      body: component.body,
+      action: {
+        button: component.button,
+        section: component.section,
+      },
+    };
+
+    if (component.header) {
+      _component.header = component.header;
+    }
+
+    if (component.footer) {
+      _component.footer = component.footer;
+    }
+
     const data = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
       to: to,
       type: "interactive",
-      interactive: component,
+      interactive: _component,
     };
 
     return await this.send(data);
   }
 
-  /* whatsapp location response */
+  /**
+   * Sends a location message.
+   *
+   * @param to - The recipient's phone number in international format.
+   * @param location - The location object containing latitude, longitude, and address.
+   * @returns A promise resolving to the WhatsApp API response.
+   */
   async location(
     to: string,
     location: Location
@@ -174,6 +292,13 @@ export class WhatsappMessages extends ShibaApiBase {
     return await this.send(data);
   }
 
+  /**
+   * Sends the given payload to the WhatsApp API.
+   *
+   * @param data - The request payload to send.
+   * @returns A promise resolving to the WhatsApp API response.
+   * @throws BadResponseError if the response does not match the expected format.
+   */
   async send(data: any): Promise<WhatsappMessageResponse> {
     try {
       const response = await this.api.post(
@@ -208,6 +333,12 @@ export class WhatsappMessages extends ShibaApiBase {
     }
   }
 
+  /**
+   * Helper method to format template components into the expected structure.
+   *
+   * @param components - The template components to format.
+   * @returns The formatted components array or `null` if no components provided.
+   */
   private componentMake(components?: TemplateComponents) {
     if (!components) {
       return null;
@@ -238,7 +369,7 @@ export class WhatsappMessages extends ShibaApiBase {
           index: ele.index,
           parameters: ele.parameters,
         };
-        _components.push(value)
+        _components.push(value);
       });
     }
 

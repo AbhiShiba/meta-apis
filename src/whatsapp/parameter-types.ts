@@ -87,7 +87,7 @@ export type Footer = {
   text: string;
 };
 
-type Reply = {
+export type Reply = {
   type: "reply";
   reply: {
     id: string;
@@ -95,16 +95,19 @@ type Reply = {
   };
 };
 
-type Buttons<T> = [T] | [T, T] | [T, T, T];
+export type Buttons<T> = [T] | [T, T] | [T, T, T];
+
+export type InteractiveButton = Buttons<Reply>
 
 export type InteractionButtonComponent = {
-  type: "button";
+  // type: "button";
   body: Body;
   footer?: Footer;
   header?: Message_Header;
-  action: {
-    buttons: Buttons<Reply>;
-  };
+  // action: {
+  //   buttons: Buttons<Reply>;
+  // };
+  buttons: InteractiveButton;
 };
 
 type Row = {
@@ -113,20 +116,22 @@ type Row = {
   description?: string;
 };
 
-type Section = {
+export type Section = {
   title: string;
   rows: Row[];
 };
 
 export type InteractiveListComponent = {
-  type: "list";
+  // type: "list";
   body: Body;
   header?: TextParameter;
   footer?: Footer;
-  action: {
-    button: string;
-    sections: Section[];
-  };
+  // action: {
+  //   button: string;
+  //   sections: Section[];
+  // };
+  button: string,
+  section: Section[]
 };
 
 export type Coordinates = {
