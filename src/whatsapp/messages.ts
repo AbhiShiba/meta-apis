@@ -238,7 +238,7 @@ export class WhatsappMessages extends ShibaApiBase {
       body: Body;
       action: {
         button: string;
-        section: Section[];
+        sections: Section[];
       };
       header?: TextParameter;
       footer?: Footer;
@@ -247,7 +247,7 @@ export class WhatsappMessages extends ShibaApiBase {
       body: component.body,
       action: {
         button: component.button,
-        section: component.section,
+        sections: component.section,
       },
     };
 
