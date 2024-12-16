@@ -1,4 +1,14 @@
 import axios, { Axios, RawAxiosRequestHeaders } from "axios";
+import {
+  isResponseSuccess,
+  LanguageCode,
+  PhoneNumberId,
+  ResponseError,
+  ResponseSuccess,
+  WhatsappMessageResponse,
+} from "./parameter-types";
+import { BadResponseError } from "../error/bad-response-error";
+import { formatError } from "../error/format-error";
 
 /**
  * Represents the version of the API.
@@ -42,7 +52,7 @@ export abstract class ShibaApiBase {
 
   /**
    * Creates an instance of ShibaApiBase.
-   * 
+   *
    * @param access_token - The access token used for authentication.
    * @param version - The API version, formatted as 'v<number>'.
    * @param headerOptions - Optional custom headers to include in the request.
@@ -69,5 +79,62 @@ export abstract class ShibaApiBase {
       baseURL: `https://graph.facebook.com/${version}`,
       headers,
     });
+  }
+
+  protected templateStructur(
+    to: string,
+    templateName: string,
+    language_code: LanguageCode,
+    components: any[]
+  ) {
+    const template = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to,
+      type: "template",
+      template: {
+        name: templateName,
+        language: {
+          code: language_code,
+        },
+        components: components,
+      },
+    };
+
+    return template;
+  }
+
+  async send(
+    phoneNumberId: PhoneNumberId,
+    data: any
+  ): Promise<WhatsappMessageResponse> {
+    try {
+      const response = await this.api.post(`/${phoneNumberId}/messages`, data);
+
+      const responseData = response.data;
+
+      const isValid = isResponseSuccess(responseData);
+
+      if (!isValid)
+        throw new BadResponseError("Invalid schema format", responseData);
+
+      const result: ResponseSuccess = {
+        status: "success",
+        messaging_product: responseData.messaging_product,
+        contacts: responseData.contacts,
+        messages: responseData.messages,
+      };
+
+      return result;
+    } catch (err: any) {
+      const formattedError = formatError(err, err?.response?.data?.error);
+
+      const error: ResponseError = {
+        status: "error",
+        error: formattedError,
+      };
+
+      return error;
+    }
   }
 }

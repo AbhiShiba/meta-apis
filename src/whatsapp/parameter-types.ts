@@ -1,4 +1,19 @@
-export type LanguageCode = "en_us";
+export type LanguageCode =
+  | "en"
+  | "en_us"
+  | "en_GB"
+  | "es"
+  | "es_MX"
+  | "es_AR"
+  | "fr"
+  | "fr_FR"
+  | "de"
+  | "pt_BR"
+  | "pt_PT"
+  | "hi"
+  | "ar"
+  | "zh_CN"
+  | "zh_TW";
 
 export type PhoneNumberId = string | number;
 
@@ -21,8 +36,33 @@ export type TextParameter = {
   text: string;
 };
 
-type Link = string;
-type Id = number;
+export type Currency = {
+  type: "currency";
+  fallback_value: string;
+  /** Currency code as defined in ISO 4217. */
+  code: string;
+  /** Amount multiplied by 1000. */
+  amount_1000: number;
+};
+
+export type Date_Time = {
+  type: "date_time";
+  fallback_value: string;
+};
+
+type BuildTuple<T, N extends number, R extends T[] = []> = R["length"] extends N
+  ? R
+  : BuildTuple<T, N, [...R, T]>;
+
+type Link = {
+  type: "link";
+  link: string;
+};
+
+type Id = {
+  type: "id";
+  id: number;
+};
 
 type ImageParameter = {
   type: "image";
@@ -97,7 +137,7 @@ export type Reply = {
 
 export type Buttons<T> = [T] | [T, T] | [T, T, T];
 
-export type InteractiveButton = Buttons<Reply>
+export type InteractiveButton = Buttons<Reply>;
 
 export type InteractionButtonComponent = {
   // type: "button";
@@ -130,8 +170,8 @@ export type InteractiveListComponent = {
   //   button: string;
   //   sections: Section[];
   // };
-  button: string,
-  section: Section[]
+  button: string;
+  section: Section[];
 };
 
 export type Coordinates = {
@@ -152,6 +192,55 @@ export type TemplateComponents = {
   bodyParameter?: TextParameter[];
   headerParameter?: Message_Header;
   quickReply?: Buttons<QuickReply>;
+};
+
+export type ProductHeader = {
+  product_retailer_id: string;
+  catalog_id: string;
+};
+
+export type CarouselQuickReply = {
+  sub_type: "quick_reply";
+  index: 0 | 1;
+  payload: string;
+};
+
+export type CarouselUrlButton = {
+  sub_type: "url";
+  index: 0 | 1;
+  text: string;
+};
+
+type CarouselButtons<T> = [T] | [T, T];
+
+export type CarouselCardItems = {
+  header: ImageParameter | VideoParameter;
+  bodyParameters?: string[];
+  buttons: CarouselButtons<CarouselQuickReply | CarouselUrlButton>;
+};
+
+type Cards<T> =
+  | BuildTuple<T, 1>
+  | BuildTuple<T, 2>
+  | BuildTuple<T, 3>
+  | BuildTuple<T, 4>
+  | BuildTuple<T, 5>
+  | BuildTuple<T, 6>
+  | BuildTuple<T, 7>
+  | BuildTuple<T, 8>
+  | BuildTuple<T, 9>
+  | BuildTuple<T, 10>;
+
+export type CarouselTemplateComponents = {
+  bodyParameters?: string[];
+  cards: Cards<CarouselCardItems>;
+};
+
+type CarouselBodyParameters = TextParameter | Currency | Date_Time;
+
+export type ProductCarousel = {
+  bodyParameters?: CarouselBodyParameters[];
+  cards: Cards<ProductHeader>;
 };
 
 export function isResponseSuccess(

@@ -9,9 +9,6 @@ import {
   TemplateComponents,
   Location,
   WhatsappMessageResponse,
-  ResponseSuccess,
-  isResponseSuccess,
-  ResponseError,
   Body,
   Section,
   TextParameter,
@@ -25,6 +22,8 @@ import {
   TokenType,
   Version,
 } from "./shiba-api-base";
+import { Carousel } from "./templates/carousel";
+import { Catalog } from "./templates/catalog";
 
 /**
  * A class for managing WhatsApp messages using the WhatsApp Business API.
@@ -34,6 +33,8 @@ export class WhatsappMessages extends ShibaApiBase {
    * The phone number ID associated with the WhatsApp Business account.
    */
   private phoneNumberId: PhoneNumberId;
+  carousel: Carousel;
+  catalog: Catalog;
 
   /**
    * Constructs an instance of `WhatsappMessages`.
@@ -53,6 +54,8 @@ export class WhatsappMessages extends ShibaApiBase {
   ) {
     super(access_token, version, headerOptions, tokenType);
     this.phoneNumberId = phoneNumberId;
+    this.carousel = new Carousel(access_token, version, phoneNumberId);
+    this.catalog = new Catalog(access_token, version, phoneNumberId);
   }
 
   /**
@@ -86,7 +89,7 @@ export class WhatsappMessages extends ShibaApiBase {
       },
     };
 
-    return await this.send(data);
+    return await this.send(this.phoneNumberId, data);
   }
 
   /**
@@ -113,7 +116,7 @@ export class WhatsappMessages extends ShibaApiBase {
       },
     };
 
-    return await this.send(data);
+    return await this.send(this.phoneNumberId, data);
   }
 
   /**
@@ -143,7 +146,7 @@ export class WhatsappMessages extends ShibaApiBase {
 
     delete data.image.type;
 
-    return await this.send(data);
+    return await this.send(this.phoneNumberId, data);
   }
 
   /**
@@ -173,7 +176,7 @@ export class WhatsappMessages extends ShibaApiBase {
 
     delete data.video.type;
 
-    return await this.send(data);
+    return await this.send(this.phoneNumberId, data);
   }
 
   /**
@@ -219,7 +222,7 @@ export class WhatsappMessages extends ShibaApiBase {
       interactive: _component,
     };
 
-    return await this.send(data);
+    return await this.send(this.phoneNumberId, data);
   }
 
   /**
@@ -267,7 +270,7 @@ export class WhatsappMessages extends ShibaApiBase {
       interactive: _component,
     };
 
-    return await this.send(data);
+    return await this.send(this.phoneNumberId, data);
   }
 
   /**
@@ -289,48 +292,7 @@ export class WhatsappMessages extends ShibaApiBase {
       location: location,
     };
 
-    return await this.send(data);
-  }
-
-  /**
-   * Sends the given payload to the WhatsApp API.
-   *
-   * @param data - The request payload to send.
-   * @returns A promise resolving to the WhatsApp API response.
-   * @throws BadResponseError if the response does not match the expected format.
-   */
-  async send(data: any): Promise<WhatsappMessageResponse> {
-    try {
-      const response = await this.api.post(
-        `/${this.phoneNumberId}/messages`,
-        data
-      );
-
-      const responseData = response.data;
-
-      const isValid = isResponseSuccess(responseData);
-
-      if (!isValid)
-        throw new BadResponseError("Invalid schema format", responseData);
-
-      const result: ResponseSuccess = {
-        status: "success",
-        messaging_product: responseData.messaging_product,
-        contacts: responseData.contacts,
-        messages: responseData.messages,
-      };
-
-      return result;
-    } catch (err: any) {
-      const formattedError = formatError(err, err?.response?.data?.error);
-
-      const error: ResponseError = {
-        status: "error",
-        error: formattedError,
-      };
-
-      return error;
-    }
+    return await this.send(this.phoneNumberId, data);
   }
 
   /**
