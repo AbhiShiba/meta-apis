@@ -1,14 +1,13 @@
-import { LanguageCode, PhoneNumberId } from "../parameter-types";
-import { ShibaApiBase, Version } from "../shiba-api-base";
+import { LanguageCode, PhoneNumberId } from "../types/parameter-types";
+import { ApiBase, Version } from "../shiba-api-base";
 
-export class Catalog extends ShibaApiBase {
-  private phoneNumberId: PhoneNumberId;
+export class Catalog extends ApiBase {
   constructor(
     access_token: string,
     version: Version,
     phoneNumberId: PhoneNumberId
   ) {
-    super(access_token, version);
+    super(access_token, version, phoneNumberId);
     this.phoneNumberId = phoneNumberId;
   }
 
@@ -56,7 +55,7 @@ export class Catalog extends ShibaApiBase {
       _components
     );
 
-    const response = await this.send(this.phoneNumberId, data);
+    const response = await this.send(data);
 
     return response;
   }

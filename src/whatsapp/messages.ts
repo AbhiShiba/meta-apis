@@ -15,10 +15,10 @@ import {
   Footer,
   Message_Header,
   InteractiveButton,
-} from "./parameter-types";
+} from "./types/parameter-types";
 import {
   HeaderOptions,
-  ShibaApiBase,
+  ApiBase,
   TokenType,
   Version,
 } from "./shiba-api-base";
@@ -28,11 +28,10 @@ import { Catalog } from "./templates/catalog";
 /**
  * A class for managing WhatsApp messages using the WhatsApp Business API.
  */
-export class WhatsappMessages extends ShibaApiBase {
+export class WhatsappMessages extends ApiBase {
   /**
    * The phone number ID associated with the WhatsApp Business account.
    */
-  private phoneNumberId: PhoneNumberId;
   carousel: Carousel;
   catalog: Catalog;
 
@@ -52,7 +51,7 @@ export class WhatsappMessages extends ShibaApiBase {
     headerOptions?: HeaderOptions,
     tokenType?: TokenType
   ) {
-    super(access_token, version, headerOptions, tokenType);
+    super(access_token, version, phoneNumberId,headerOptions, tokenType);
     this.phoneNumberId = phoneNumberId;
     this.carousel = new Carousel(access_token, version, phoneNumberId);
     this.catalog = new Catalog(access_token, version, phoneNumberId);
@@ -89,7 +88,7 @@ export class WhatsappMessages extends ShibaApiBase {
       },
     };
 
-    return await this.send(this.phoneNumberId, data);
+    return await this.send(data);
   }
 
   /**
@@ -116,7 +115,7 @@ export class WhatsappMessages extends ShibaApiBase {
       },
     };
 
-    return await this.send(this.phoneNumberId, data);
+    return await this.send(data);
   }
 
   /**
@@ -146,7 +145,7 @@ export class WhatsappMessages extends ShibaApiBase {
 
     delete data.image.type;
 
-    return await this.send(this.phoneNumberId, data);
+    return await this.send(data);
   }
 
   /**
@@ -176,7 +175,7 @@ export class WhatsappMessages extends ShibaApiBase {
 
     delete data.video.type;
 
-    return await this.send(this.phoneNumberId, data);
+    return await this.send(data);
   }
 
   /**
@@ -222,7 +221,7 @@ export class WhatsappMessages extends ShibaApiBase {
       interactive: _component,
     };
 
-    return await this.send(this.phoneNumberId, data);
+    return await this.send(data);
   }
 
   /**
@@ -270,7 +269,7 @@ export class WhatsappMessages extends ShibaApiBase {
       interactive: _component,
     };
 
-    return await this.send(this.phoneNumberId, data);
+    return await this.send(data);
   }
 
   /**
@@ -292,7 +291,7 @@ export class WhatsappMessages extends ShibaApiBase {
       location: location,
     };
 
-    return await this.send(this.phoneNumberId, data);
+    return await this.send(data);
   }
 
   /**

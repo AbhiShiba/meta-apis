@@ -3,16 +3,10 @@ import {
   LanguageCode,
   PhoneNumberId,
   ProductCarousel,
-} from "../parameter-types";
-import {
-  HeaderOptions,
-  ShibaApiBase,
-  TokenType,
-  Version,
-} from "../shiba-api-base";
+} from "../types/parameter-types";
+import { HeaderOptions, ApiBase, TokenType, Version } from "../shiba-api-base";
 
-export class Carousel extends ShibaApiBase {
-  private phoneNumberId: PhoneNumberId;
+export class Carousel extends ApiBase {
   constructor(
     access_token: string,
     version: Version,
@@ -20,7 +14,7 @@ export class Carousel extends ShibaApiBase {
     headerOptions?: HeaderOptions,
     tokenType?: TokenType
   ) {
-    super(access_token, version, headerOptions, tokenType);
+    super(access_token, version, phoneNumberId, headerOptions, tokenType);
     this.phoneNumberId = phoneNumberId;
   }
 
@@ -39,7 +33,7 @@ export class Carousel extends ShibaApiBase {
       _components
     );
 
-    const response = await this.send(this.phoneNumberId, data);
+    const response = await this.send(data);
 
     return response;
   }
@@ -59,7 +53,7 @@ export class Carousel extends ShibaApiBase {
       _components
     );
 
-    const response = await this.send(this.phoneNumberId, data);
+    const response = await this.send(data);
 
     return response;
   }

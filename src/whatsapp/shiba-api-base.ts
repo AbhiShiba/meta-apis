@@ -6,7 +6,7 @@ import {
   ResponseError,
   ResponseSuccess,
   WhatsappMessageResponse,
-} from "./parameter-types";
+} from "./types/parameter-types";
 import { BadResponseError } from "../error/bad-response-error";
 import { formatError } from "../error/format-error";
 
@@ -34,7 +34,7 @@ export type TokenType = "Bearer" | "OAuth";
  * Handles authentication and sets up an Axios instance with the provided configuration.
  */
 
-export abstract class ShibaApiBase {
+export abstract class ApiBase {
   /**
    * The access token used for API authentication.
    */
@@ -49,6 +49,10 @@ export abstract class ShibaApiBase {
    * The type of token used for authentication, either 'Bearer' or 'OAuth'.
    */
   protected token_type: TokenType;
+  /**
+   * The phone number ID associated with the WhatsApp Business account.
+   */
+  protected phoneNumberId: PhoneNumberId;
 
   /**
    * Creates an instance of ShibaApiBase.
@@ -61,11 +65,13 @@ export abstract class ShibaApiBase {
   constructor(
     access_token: string,
     version: Version,
+    phoneNumberId: PhoneNumberId,
     headerOptions: HeaderOptions = {},
     tokenType: TokenType = "Bearer"
   ) {
     this.accessToken = access_token;
     this.token_type = tokenType;
+    this.phoneNumberId = phoneNumberId
 
     // Setting up default headers with content type and authorization token
     const headers: HeaderOptions = {
@@ -105,11 +111,10 @@ export abstract class ShibaApiBase {
   }
 
   async send(
-    phoneNumberId: PhoneNumberId,
     data: any
   ): Promise<WhatsappMessageResponse> {
     try {
-      const response = await this.api.post(`/${phoneNumberId}/messages`, data);
+      const response = await this.api.post(`/${this.phoneNumberId}/messages`, data);
 
       const responseData = response.data;
 
