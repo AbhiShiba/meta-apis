@@ -1,48 +1,34 @@
-import { BadResponseError } from "../error/bad-response-error";
-import { formatError } from "../error/format-error";
 import {
   InteractionButtonComponent,
   InteractiveListComponent,
-  LanguageCode,
   Media,
   PhoneNumberId,
-  TemplateComponents,
   Location,
   WhatsappMessageResponse,
-  Body,
-  Section,
-  TextParameter,
-  Footer,
-  Message_Header,
-  InteractiveButton,
 } from "./types/parameter-types";
-import {
-  HeaderOptions,
-  ApiBase,
-  TokenType,
-  Version,
-} from "./shiba-api-base";
 import { Carousel } from "./templates/carousel";
 import { Catalog } from "./templates/catalog";
+import { ApiBase } from "./shiba-api-base";
+import { HeaderOptions, TokenType, Version } from "./types/common-types";
+import { Template } from "./templates/template";
+import { TemplateSend } from "./types/template-types";
 
 /**
  * A class for managing WhatsApp messages using the WhatsApp Business API.
  */
 export class WhatsappMessages extends ApiBase {
-  /**
-   * The phone number ID associated with the WhatsApp Business account.
-   */
-  carousel: Carousel;
-  catalog: Catalog;
+  public carousel: Carousel;
+  public catalog: Catalog;
+  public template: TemplateSend;
 
   /**
    * Constructs an instance of `WhatsappMessages`.
    *
-   * @param access_token - The access token used for authentication.
-   * @param version - The API version, formatted as `v<number>`.
-   * @param phoneNumberId - The phone number ID for sending messages.
-   * @param headerOptions - Optional custom headers for the API requests.
-   * @param tokenType - The type of token for authorization. Defaults to "Bearer".
+   * @param {string} access_token - The access token used for authentication.
+   * @param {Version} version - The API version, formatted as `v<number>`.
+   * @param {PhoneNumberId} phoneNumberId - The phone number ID for sending messages.
+   * @param {HeaderOptions} [headerOptions] - Optional custom headers for API requests.
+   * @param {TokenType} [tokenType] - The type of token for authorization (defaults to "Bearer").
    */
   constructor(
     access_token: string,
@@ -51,289 +37,173 @@ export class WhatsappMessages extends ApiBase {
     headerOptions?: HeaderOptions,
     tokenType?: TokenType
   ) {
-    super(access_token, version, phoneNumberId,headerOptions, tokenType);
-    this.phoneNumberId = phoneNumberId;
+    super(access_token, version, phoneNumberId, headerOptions, tokenType);
     this.carousel = new Carousel(access_token, version, phoneNumberId);
     this.catalog = new Catalog(access_token, version, phoneNumberId);
+    this.template = new Template(
+      access_token,
+      version,
+      phoneNumberId
+    ).templateSend;
   }
 
   /**
-   * Sends a WhatsApp template message.
+   * Sends a WhatsApp message with the given data.
    *
-   * @param to - The recipient's phone number in international format.
-   * @param templateName - The name of the template to send.
-   * @param language_code - The language code of the template (e.g., "en_US").
-   * @param components - Optional components like header, body, or buttons.
-   * @returns A promise resolving to the WhatsApp API response.
+   * @private
+   * @param {object} data - The message payload.
+   * @returns {Promise<WhatsappMessageResponse>} The API response.
    */
-  async template(
-    to: string,
-    templateName: string,
-    language_code: LanguageCode,
-    components?: TemplateComponents
-  ): Promise<WhatsappMessageResponse> {
-    let _components = this.componentMake(components);
-
-    const data = {
-      messaging_product: "whatsapp",
-      recipient_type: "individual",
-      to: to,
-      type: "template",
-      template: {
-        name: templateName,
-        language: {
-          code: language_code,
-        },
-        ...(_components ? { components: _components } : {}),
-      },
-    };
-
-    return await this.send(data);
+  private async sendMessage(data: object): Promise<WhatsappMessageResponse> {
+    return this.send(data);
   }
 
   /**
    * Sends a plain text message.
    *
-   * @param to - The recipient's phone number in international format.
-   * @param bodyText - The text content of the message.
-   * @param preview_url - Whether to include a URL preview in the message. Defaults to true.
-   * @returns A promise resolving to the WhatsApp API response.
+   * @param {string} to - The recipient's phone number in international format.
+   * @param {string} bodyText - The text content of the message.
+   * @param {boolean} [preview_url=true] - Whether to enable URL previews in the message.
+   * @returns {Promise<WhatsappMessageResponse>} The API response.
    */
   async text(
     to: string,
     bodyText: string,
     preview_url: boolean = true
   ): Promise<WhatsappMessageResponse> {
-    const data = {
+    return this.sendMessage({
       messaging_product: "whatsapp",
       recipient_type: "individual",
       to,
       type: "text",
-      text: {
-        preview_url: preview_url,
-        body: bodyText,
-      },
-    };
+      text: { preview_url, body: bodyText },
+    });
+  }
 
-    return await this.send(data);
+  /**
+   * Sends an image or video message.
+   *
+   * @private
+   * @param {string} to - The recipient's phone number.
+   * @param {Media} mediaOption - The media object containing details (e.g., URL or ID).
+   * @param {"image" | "video"} type - The type of media message.
+   * @returns {Promise<WhatsappMessageResponse>} The API response.
+   */
+  private async mediaMessage(
+    to: string,
+    mediaOption: Media,
+    type: "image" | "video"
+  ): Promise<WhatsappMessageResponse> {
+    const { type: _, ...mediaData } = mediaOption; // Remove `type` if present
+    return this.sendMessage({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to,
+      type,
+      [type]: mediaData,
+    });
   }
 
   /**
    * Sends an image message.
    *
-   * @param to - The recipient's phone number in international format.
-   * @param imageOption - The media object containing image details (e.g., URL or ID).
-   * @returns A promise resolving to the WhatsApp API response.
+   * @param {string} to - The recipient's phone number.
+   * @param {Media} imageOption - The media object containing image details.
+   * @returns {Promise<WhatsappMessageResponse>} The API response.
    */
   async image(
     to: string,
     imageOption: Media
   ): Promise<WhatsappMessageResponse> {
-    const data: {
-      messaging_product: "whatsapp";
-      recipient_type: "individual";
-      to: string;
-      type: "image";
-      image: Partial<Media>;
-    } = {
-      messaging_product: "whatsapp",
-      recipient_type: "individual",
-      to: to,
-      type: "image",
-      image: imageOption,
-    };
-
-    delete data.image.type;
-
-    return await this.send(data);
+    return this.mediaMessage(to, imageOption, "image");
   }
 
   /**
    * Sends a video message.
    *
-   * @param to - The recipient's phone number in international format.
-   * @param videoOption - The media object containing video details (e.g., URL or ID).
-   * @returns A promise resolving to the WhatsApp API response.
+   * @param {string} to - The recipient's phone number.
+   * @param {Media} videoOption - The media object containing video details.
+   * @returns {Promise<WhatsappMessageResponse>} The API response.
    */
   async video(
     to: string,
     videoOption: Media
   ): Promise<WhatsappMessageResponse> {
-    const data: {
-      messaging_product: "whatsapp";
-      recipient_type: "individual";
-      to: string;
-      type: "video";
-      video: Partial<Media>;
-    } = {
-      messaging_product: "whatsapp",
-      recipient_type: "individual",
-      to: to,
-      type: "video",
-      video: videoOption,
-    };
-
-    delete data.video.type;
-
-    return await this.send(data);
+    return this.mediaMessage(to, videoOption, "video");
   }
 
   /**
-   * Sends a message with interactive reply buttons.
+   * Sends an interactive button message.
    *
-   * @param to - The recipient's phone number in international format.
-   * @param component - The interactive button component details.
-   * @returns A promise resolving to the WhatsApp API response.
+   * @param {string} to - The recipient's phone number.
+   * @param {InteractionButtonComponent} component - The interactive button details.
+   * @returns {Promise<WhatsappMessageResponse>} The API response.
    */
   async interactiveReplyButtons(
     to: string,
     component: InteractionButtonComponent
   ): Promise<WhatsappMessageResponse> {
-    const _component: {
-      type: "button";
-      body: Body;
-      action: {
-        buttons: InteractiveButton;
-      };
-      header?: Message_Header;
-      footer?: Footer;
-    } = {
-      type: "button",
-      body: component.body,
-      action: {
-        buttons: component.buttons,
-      },
-    };
-
-    if (component.header) {
-      _component.header = component.header;
-    }
-
-    if (component.footer) {
-      _component.footer = component.footer;
-    }
-
-    const data = {
+    return this.sendMessage({
       messaging_product: "whatsapp",
       recipient_type: "individual",
-      to: to,
+      to,
       type: "interactive",
-      interactive: _component,
-    };
-
-    return await this.send(data);
+      interactive: {
+        type: "button",
+        body: component.body,
+        action: { buttons: component.buttons },
+        ...(component.header && { header: component.header }),
+        ...(component.footer && { footer: component.footer }),
+      },
+    });
   }
 
   /**
    * Sends an interactive list reply message.
    *
-   * @param to - The recipient's phone number in international format.
-   * @param component - The interactive list component details.
-   * @returns A promise resolving to the WhatsApp API response.
+   * @param {string} to - The recipient's phone number.
+   * @param {InteractiveListComponent} component - The interactive list component details.
+   * @returns {Promise<WhatsappMessageResponse>} The API response.
    */
   async interactiveListReply(
     to: string,
     component: InteractiveListComponent
   ): Promise<WhatsappMessageResponse> {
-    const _component: {
-      type: "list";
-      body: Body;
-      action: {
-        button: string;
-        sections: Section[];
-      };
-      header?: TextParameter;
-      footer?: Footer;
-    } = {
-      type: "list",
-      body: component.body,
-      action: {
-        button: component.button,
-        sections: component.section,
-      },
-    };
-
-    if (component.header) {
-      _component.header = component.header;
-    }
-
-    if (component.footer) {
-      _component.footer = component.footer;
-    }
-
-    const data = {
+    return this.sendMessage({
       messaging_product: "whatsapp",
       recipient_type: "individual",
-      to: to,
+      to,
       type: "interactive",
-      interactive: _component,
-    };
-
-    return await this.send(data);
+      interactive: {
+        type: "list",
+        body: component.body,
+        action: {
+          button: component.button,
+          sections: component.section,
+        },
+        ...(component.header && { header: component.header }),
+        ...(component.footer && { footer: component.footer }),
+      },
+    });
   }
 
   /**
    * Sends a location message.
    *
-   * @param to - The recipient's phone number in international format.
-   * @param location - The location object containing latitude, longitude, and address.
-   * @returns A promise resolving to the WhatsApp API response.
+   * @param {string} to - The recipient's phone number.
+   * @param {Location} location - The location details (latitude, longitude, and address).
+   * @returns {Promise<WhatsappMessageResponse>} The API response.
    */
   async location(
     to: string,
     location: Location
   ): Promise<WhatsappMessageResponse> {
-    const data = {
+    return this.sendMessage({
       messaging_product: "whatsapp",
       recipient_type: "individual",
-      to: to,
+      to,
       type: "location",
-      location: location,
-    };
-
-    return await this.send(data);
-  }
-
-  /**
-   * Helper method to format template components into the expected structure.
-   *
-   * @param components - The template components to format.
-   * @returns The formatted components array or `null` if no components provided.
-   */
-  private componentMake(components?: TemplateComponents) {
-    if (!components) {
-      return null;
-    }
-    const _components = [];
-    const { bodyParameter, headerParameter, quickReply } = components;
-
-    if (headerParameter) {
-      const header = {
-        type: "header",
-        parameters: [headerParameter],
-      };
-      _components.push(header);
-    }
-    if (bodyParameter) {
-      const body = {
-        type: "body",
-        parameters: bodyParameter,
-      };
-      _components.push(body);
-    }
-
-    if (quickReply && Array.isArray(quickReply)) {
-      quickReply.forEach((ele) => {
-        const value = {
-          type: "button",
-          sub_type: "quick_reply",
-          index: ele.index,
-          parameters: ele.parameters,
-        };
-        _components.push(value);
-      });
-    }
-
-    return _components;
+      location,
+    });
   }
 }

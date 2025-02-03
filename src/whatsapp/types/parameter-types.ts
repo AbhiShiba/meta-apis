@@ -1,6 +1,6 @@
 export type LanguageCode =
   | "en"
-  | "en_us"
+  | "en_US"
   | "en_GB"
   | "es"
   | "es_MX"
@@ -17,17 +17,17 @@ export type LanguageCode =
 
 export type PhoneNumberId = string | number;
 
-interface MediaId {
+type MediaId = {
   type: "id";
   id: number | string;
   caption?: string;
-}
+};
 
-interface MediaURL {
+type MediaURL = {
   type: "url";
   link: string;
   caption?: string;
-}
+};
 
 export type Media = MediaURL | MediaId;
 

@@ -4,7 +4,8 @@ import {
   PhoneNumberId,
   ProductCarousel,
 } from "../types/parameter-types";
-import { HeaderOptions, ApiBase, TokenType, Version } from "../shiba-api-base";
+import { ApiBase } from "../shiba-api-base";
+import { HeaderOptions, TokenType, Version } from "../types/common-types";
 
 export class Carousel extends ApiBase {
   constructor(
@@ -15,7 +16,6 @@ export class Carousel extends ApiBase {
     tokenType?: TokenType
   ) {
     super(access_token, version, phoneNumberId, headerOptions, tokenType);
-    this.phoneNumberId = phoneNumberId;
   }
 
   async media(

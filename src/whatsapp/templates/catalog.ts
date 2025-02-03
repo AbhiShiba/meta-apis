@@ -1,5 +1,6 @@
 import { LanguageCode, PhoneNumberId } from "../types/parameter-types";
-import { ApiBase, Version } from "../shiba-api-base";
+import { ApiBase } from "../shiba-api-base";
+import { Version } from "../types/common-types";
 
 export class Catalog extends ApiBase {
   constructor(
@@ -8,7 +9,6 @@ export class Catalog extends ApiBase {
     phoneNumberId: PhoneNumberId
   ) {
     super(access_token, version, phoneNumberId);
-    this.phoneNumberId = phoneNumberId;
   }
 
   async message(

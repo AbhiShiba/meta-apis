@@ -1,33 +1,16 @@
-import axios, { Axios, RawAxiosRequestHeaders } from "axios";
+import axios, { Axios } from "axios";
 import {
   isResponseSuccess,
   LanguageCode,
   PhoneNumberId,
   ResponseError,
   ResponseSuccess,
+  TemplateComponents,
   WhatsappMessageResponse,
 } from "./types/parameter-types";
 import { BadResponseError } from "../error/bad-response-error";
 import { formatError } from "../error/format-error";
-
-/**
- * Represents the version of the API.
- * The version should follow the format `v<number>`, e.g., `v1`, `v2`.
- */
-export type Version = `v${number}`;
-
-/**
- * Represents the structure of custom HTTP headers.
- * It extends the RawAxiosRequestHeaders type from Axios.
- */
-export type HeaderOptions = RawAxiosRequestHeaders;
-
-/**
- * Defines the type of authorization token to be used.
- * - `Bearer`: Standard Bearer token.
- * - `OAuth`: OAuth token.
- */
-export type TokenType = "Bearer" | "OAuth";
+import { HeaderOptions, TokenType, Version } from "./types/common-types";
 
 /**
  * Base class for interacting with the Shiba API.
@@ -71,7 +54,7 @@ export abstract class ApiBase {
   ) {
     this.accessToken = access_token;
     this.token_type = tokenType;
-    this.phoneNumberId = phoneNumberId
+    this.phoneNumberId = phoneNumberId;
 
     // Setting up default headers with content type and authorization token
     const headers: HeaderOptions = {
@@ -110,11 +93,12 @@ export abstract class ApiBase {
     return template;
   }
 
-  async send(
-    data: any
-  ): Promise<WhatsappMessageResponse> {
+  protected async send(data: any): Promise<WhatsappMessageResponse> {
     try {
-      const response = await this.api.post(`/${this.phoneNumberId}/messages`, data);
+      const response = await this.api.post(
+        `/${this.phoneNumberId}/messages`,
+        data
+      );
 
       const responseData = response.data;
 
@@ -141,5 +125,30 @@ export abstract class ApiBase {
 
       return error;
     }
+  }
+
+  /**
+   * Formats template components into the required API structure.
+   *
+   * @private
+   * @param {TemplateComponents} [components] - The template components.
+   * @returns {object | null} The formatted components object or `null` if no components exist.
+   */
+  protected componentMake(components?: TemplateComponents) {
+    if (!components) return null;
+
+    const { bodyParameter, headerParameter, quickReply } = components;
+    return {
+      components: [
+        headerParameter && { type: "header", parameters: [headerParameter] },
+        bodyParameter && { type: "body", parameters: bodyParameter },
+        ...(quickReply?.map((ele) => ({
+          type: "button",
+          sub_type: "quick_reply",
+          index: ele.index,
+          parameters: ele.parameters,
+        })) || []),
+      ].filter(Boolean),
+    };
   }
 }
